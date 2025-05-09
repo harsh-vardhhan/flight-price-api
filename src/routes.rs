@@ -10,6 +10,7 @@ pub struct FlightParams {
     page: Option<usize>,
     origin: Option<String>,
     destination: Option<String>,
+    airline: Option<String>,
     sort_by: Option<String>,
     max_price: Option<u32>, 
     max_rain: Option<u8>,
@@ -44,6 +45,15 @@ pub async fn list_flights(
     // Filter by destination if specified
     if let Some(destination) = params.destination {
         filtered_flights.retain(|flight| flight.destination.to_lowercase().contains(&destination.to_lowercase()));
+    }
+    
+    // Filter by airline if specified
+    if let Some(airline) = params.airline {
+        // Split by comma to handle multiple airlines
+        let airlines: Vec<&str> = airline.split(',').collect();
+        filtered_flights.retain(|flight| {
+            airlines.iter().any(|&a| flight.airline.to_lowercase().contains(&a.trim().to_lowercase()))
+        });
     }
     
     // Filter by max price if specified
