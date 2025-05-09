@@ -18,6 +18,7 @@ pub struct Flight {
     pub origin_country: String,
     pub destination_country: String,
     pub rain_probability: u8,
+    pub free_meal: bool,
 }
 
 // Rename fields from snake_case in JSON to camelCase in Rust struct
@@ -36,6 +37,7 @@ impl Flight {
             origin_country: serde_json::from_value(json["originCountry"].clone()).ok()?,
             destination_country: serde_json::from_value(json["destinationCountry"].clone()).ok()?,
             rain_probability: serde_json::from_value(json["rainProbability"].clone()).ok()?,
+            free_meal: serde_json::from_value(json["freeMeal"].clone()).ok()?,
         })
     }
 }
@@ -45,8 +47,11 @@ pub type FlightDb = Arc<Vec<Flight>>;
 pub async fn load_flights() -> Result<FlightDb, std::io::Error> {
     let json_file_path = "flight-price.json";
     if !Path::new(json_file_path).exists() {
-        println!("Warning: {} does not exist. Using sample data.", json_file_path);
-        
+        println!(
+            "Warning: {} does not exist. Using sample data.",
+            json_file_path
+        );
+
         // Return a sample flight for testing
         let sample_flight = Flight {
             uuid: Uuid::parse_str("39173ac0-bbf4-4b2f-8b89-7f15c3614937").unwrap(),
@@ -61,25 +66,26 @@ pub async fn load_flights() -> Result<FlightDb, std::io::Error> {
             origin_country: "Vietnam".to_string(),
             destination_country: "India".to_string(),
             rain_probability: 0,
+            free_meal: true,
         };
-        
+
         return Ok(Arc::new(vec![sample_flight]));
     }
 
     // Read the JSON file
     let file_content = tokio::fs::read_to_string(json_file_path).await?;
     let json_data: serde_json::Value = serde_json::from_str(&file_content)?;
-    
+
     // Parse the JSON array
     if let Some(json_array) = json_data.as_array() {
         let mut flights = Vec::new();
-        
+
         for flight_json in json_array {
             if let Some(flight) = Flight::from_json(flight_json) {
                 flights.push(flight);
             }
         }
-        
+
         Ok(Arc::new(flights))
     } else {
         // If not an array, return empty vector
