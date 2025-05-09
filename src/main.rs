@@ -26,8 +26,16 @@ async fn main() {
         .with_state(flights);
 
     // Run our application
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    println!("Server running on http://{}", addr);
+    // Get port from environment variable for cloud deployment (like Render)
+    // or use 3000 as default for local development
+    let port = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse::<u16>().ok())
+        .unwrap_or(3000);
+    
+    // Bind to 0.0.0.0 to listen on all network interfaces (required for cloud deployment)
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    println!("Server running on http://0.0.0.0:{}", port);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
