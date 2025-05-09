@@ -1,8 +1,5 @@
 # Flight API Documentation
 
-## Base URL
-`https://flight-price-api-hg5r.onrender.com`
-
 ## Endpoints
 
 ### Get Flights
@@ -50,16 +47,16 @@ Returns paginated flight data with optional filtering and sorting.
 #### Examples
 
 - Get first page of flights sorted by price (default):
-  `GET https://flight-price-api-hg5r.onrender.com/api/flights`
+  `GET /api/flights`
 
 - Get flights from New Delhi to Hanoi with price under 10000:
-  `GET https://flight-price-api-hg5r.onrender.com/api/flights?origin=New%20Delhi&destination=Hanoi&max_price=10000`
+  `GET /api/flights?origin=New%20Delhi&destination=Hanoi&max_price=10000`
 
 - Get flights sorted by date with rain probability under 20:
-  `GET https://flight-price-api-hg5r.onrender.com/api/flights?sort_by=date&max_rain=20`
+  `GET /api/flights?sort_by=date&max_rain=20`
 
 - Get second page of results:
-  `GET https://flight-price-api-hg5r.onrender.com/api/flights?page=2`
+  `GET /api/flights?page=2`
 
 Notes:
 - Pagination returns up to 20 items per page
