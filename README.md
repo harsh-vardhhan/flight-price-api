@@ -1,66 +1,154 @@
 # Flight API Documentation
 
-## Endpoints
+## Overview
 
-### Get Flights
-`GET /api/flights`
+This API provides access to flight information including routes, airlines, prices, and other details. It offers filtering capabilities and pagination support for efficient data retrieval.
 
-Returns paginated flight data with optional filtering and sorting.
+## Base URL
 
-#### Query Parameters
+```
+http://localhost:3000
+```
+
+In production environments, the API will be accessible on all network interfaces (0.0.0.0).
+
+## API Endpoints
+
+### Health Check
+
+Verifies that the API is running properly.
+
+**Endpoint:** `GET /health`
+
+**Response:**
+- Status Code: 200 OK
+- Content: `"OK"`
+
+### List Flights
+
+Returns a paginated list of flights with optional filtering and sorting capabilities.
+
+**Endpoint:** `GET /api/flights`
+
+**Query Parameters:**
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | page | integer | No | Page number (default: 1) |
-| origin | string | No | Filter by origin city/airport |
-| destination | string | No | Filter by destination city/airport |
-| sort_by | string | No | Sort method: "price" (default) or "date" |
-| max_price | integer | No | Filter flights with price under this value |
-| max_rain | integer | No | Filter flights with rain probability under this value |
+| origin | string | No | Filter flights by origin city (case-insensitive, partial match) |
+| destination | string | No | Filter flights by destination city (case-insensitive, partial match) |
+| airline | string | No | Filter flights by airline name(s) (case-insensitive, partial match). Multiple airlines can be specified as comma-separated values. |
+| sort_by | string | No | Sort results by field. Options: `"date"` (ascending). Default: sorts by price (ascending) |
+| max_price | integer | No | Maximum price in INR |
+| max_rain | integer | No | Maximum rain probability (0-100) |
 
-#### Response Format
+**Response:**
 
 ```json
 {
   "data": [
     {
-      "uuid": "string",
-      "date": "YYYY-MM-DD",
-      "origin": "string",
-      "destination": "string",
-      "airline": "string",
-      "time": "string",
-      "duration": "string",
-      "flight_type": "string",
-      "price_inr": number,
-      "origin_country": "string",
-      "destination_country": "string",
-      "rain_probability": number
-    }
+      "uuid": "39173ac0-bbf4-4b2f-8b89-7f15c3614937",
+      "date": "2026-01-04",
+      "origin": "Ho Chi Minh City",
+      "destination": "Ahmedabad",
+      "airline": "Singapore Airlines",
+      "time": "19:50 - 21:50",
+      "duration": "27h 30m",
+      "flight_type": "1 Stop",
+      "price_inr": 31260,
+      "origin_country": "Vietnam",
+      "destination_country": "India",
+      "rain_probability": 0,
+      "free_meal": true
+    },
+    // ... additional flights
   ],
-  "page": number,
-  "total_pages": number,
-  "total_items": number
+  "page": 1,
+  "total_pages": 5,
+  "total_items": 87
 }
 ```
 
-#### Examples
+#### Response Fields:
 
-- Get first page of flights sorted by price (default):
-  `GET /api/flights`
+| Field | Description |
+|-------|-------------|
+| data | Array of flight objects |
+| page | Current page number |
+| total_pages | Total number of pages available |
+| total_items | Total number of flights matching the filters |
 
-- Get flights from New Delhi to Hanoi with price under 10000:
-  `GET /api/flights?origin=New%20Delhi&destination=Hanoi&max_price=10000`
+#### Flight Object Fields:
 
-- Get flights sorted by date with rain probability under 20:
-  `GET /api/flights?sort_by=date&max_rain=20`
+| Field | Type | Description |
+|-------|------|-------------|
+| uuid | string | Unique identifier for the flight |
+| date | string | Departure date (YYYY-MM-DD format) |
+| origin | string | Origin city name |
+| destination | string | Destination city name |
+| airline | string | Airline name |
+| time | string | Departure and arrival time (format: "HH:MM - HH:MM") |
+| duration | string | Flight duration (format: "XXh YYm") |
+| flight_type | string | Type of flight (e.g., "Non-stop", "1 Stop") |
+| price_inr | integer | Price in Indian Rupees (INR) |
+| origin_country | string | Country of origin |
+| destination_country | string | Destination country |
+| rain_probability | integer | Probability of rain at destination (0-100) |
+| free_meal | boolean | Whether a free meal is provided on the flight |
 
-- Get second page of results:
-  `GET /api/flights?page=2`
+## Examples
 
-Notes:
-- Pagination returns up to 20 items per page
-- Origin/destination matching is case-insensitive and partial (contains search)
-- Multiple filters can be applied simultaneously
-- Sort order for price is ascending (lowest first)
-- Sort order for date is chronological (earliest first)
+### Basic Request
+
+```
+GET /api/flights
+```
+
+Returns the first page of flights, sorted by price.
+
+### Filtered Request
+
+```
+GET /api/flights?origin=delhi&destination=mumbai&airline=indigo,air%20india&max_price=5000
+```
+
+Returns flights from Delhi to Mumbai, operated by either IndiGo or Air India, with prices less than 5000 INR.
+
+### Pagination
+
+```
+GET /api/flights?page=2
+```
+
+Returns the second page of flights (items 21-40).
+
+### Sorting
+
+```
+GET /api/flights?sort_by=date
+```
+
+Returns flights sorted by departure date (ascending).
+
+## Error Handling
+
+The API follows standard HTTP status codes for error responses:
+
+- `200 OK`: Request successful
+- `400 Bad Request`: Invalid parameters
+- `404 Not Found`: Resource not found
+- `500 Internal Server Error`: Server-side error
+
+## Data Source
+
+Flight data is loaded from a `flight-price.json` file when the API starts. If the file is not present, a sample flight will be used for testing purposes.
+
+## CORS Support
+
+The API supports Cross-Origin Resource Sharing (CORS) with the following configuration:
+- All origins are allowed
+- All HTTP methods are allowed
+- All headers are allowed
+
+This enables the API to be accessed from web browsers across different domains.
