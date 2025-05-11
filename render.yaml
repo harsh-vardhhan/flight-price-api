@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: flight-api
+    env: rust
+    region: oregon
+    plan: free 
+    buildCommand: |
+      # Clear build cache
+      rm -rf target/
+      # Install dependencies and build the application
+      cargo build --release
+    startCommand: ./target/release/flight-api
+    envVars:
+      - key: RUST_VERSION
+        value: 1.74.0
+      - key: RUST_LOG
+        value: info
+      - key: PORT
+        value: 3000
+      - key: PRODUCTION
+        value: "true" # Ensures the app binds to 0.0.0.0 in production
+    autoDeploy: true
+    healthCheckPath: /health
